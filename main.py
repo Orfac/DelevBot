@@ -9,17 +9,20 @@ from order import *
 from bot_token import *
 from user import *
 
+
 def start_command(bot, update):
     current_chat_id = update.message.chat_id
     bot.send_message(chat_id=current_chat_id, text="I'm a bot, please talk to me!")
     print(current_chat_id)
     add_new_user(current_chat_id)
 
+
 def add_command(bot, update):
     users = get_users()
     print(update.message)
     current_chat_id = update.message.chat_id
     bot.send_message(chat_id=update.message.chat_id, text="It's a common message for everybody")
+
 
 def help_command(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
