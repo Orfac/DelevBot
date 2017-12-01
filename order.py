@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 
+
 class Order:
     def __init__(self, customer_id, description,
                  performer_id=-1):
@@ -16,27 +17,27 @@ class Order:
 
         return order_dict
 
+
 class ListOrders:
     def __init__(self):
         pass
 
-    @staticmethod
-    def get_orders():
+    def __get_orders(self):
         client = MongoClient()
         db = client['BotDB']
         orders = db['Orders']
         return orders
 
     def add_order(self, order):
-        orders = self.get_orders()
+        orders = self.__get_orders()
         orders.insert_one(order.to_dict())
 
     def delete_order(self, customer_id):
-        orders = self.get_orders()
+        orders = self.__get_orders()
         orders.remove({"customer_id": customer_id})
 
     def take_order(self, customer_id, performer_id):
-        orders = self.get_orders()
+        orders = self.__get_orders()
         orders.update_one(
             {'customer_id': customer_id},
             {
@@ -45,7 +46,7 @@ class ListOrders:
         )
 
     def get_order(self, customer_id):
-        orders = self.get_orders()
+        orders = self.__get_orders()
         order_d = orders.find_one(
             {'customer_id': customer_id}
         )
@@ -54,7 +55,7 @@ class ListOrders:
         return order
 
     def print_orders(self):
-        orders = self.get_orders()
+        orders = self.__get_orders()
         orders_collection = orders.find()
         for order in orders_collection:
             print(order)

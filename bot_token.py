@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 
+
 def set_token(token):
     client = MongoClient()
     db = client['BotDB']
@@ -20,5 +21,7 @@ def get_token():
         for token_d in tokens:
             result = token_d['value']
     except Exception:
+        print("There are no token in your db, "
+              "please set it by set_token({token})")
         pass
     return result
