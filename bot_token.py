@@ -8,7 +8,7 @@ def set_token(token):
 
     coll = {'value': token}
     token_coll.insert_one(coll)
-
+#dfsdf
 
 # noinspection PyBroadException
 def get_token():
