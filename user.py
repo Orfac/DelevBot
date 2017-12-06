@@ -19,6 +19,15 @@ def get_users():
     return list_users
 
 
+def get_users_ids(filter_id=None):
+    users = get_users()
+    list_ids = []
+    for user in users:
+        if user['id'] != filter_id:
+            list_ids.append(user['id'])
+    return list_ids
+
+
 def add_new_user(new_id):
     users = __get_users()
     users.update_one(

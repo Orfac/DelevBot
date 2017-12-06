@@ -1,15 +1,13 @@
 import logging
 
 from telegram.ext import CommandHandler
+from telegram.ext import Filters
 from telegram.ext import MessageHandler
 from telegram.ext import Updater
-from telegram.ext import Filters
 
-from pymongo import MongoClient
-from order import *
 from bot_token import *
-from user import *
 from order import *
+from user import *
 
 
 def start_command(bot, update):
@@ -28,7 +26,6 @@ def start_command(bot, update):
 def add_command(bot, update):
     user_id = update.message.chat_id
     set_state(user_id=user_id, state="add")
-    print('HI!!!')
 
 
 def remove_command(bot, update):
@@ -36,10 +33,16 @@ def remove_command(bot, update):
     delete_order(user_id)
     set_state(user_id=user_id, state="normal")
     print_orders()
+    user_ids = get_users_ids(filter_id=user_id)
+    for rec_id in user_ids:
+        bot.send_message(chat_id=rec_id,
+                         text="Заказ был удалён:\n" +
+                              str(user_id))
 
 
 def take_command(bot, update):
-    pass
+    user_id = update.message.chat_id
+    set_state(user_id=user_id, state="take")
 
 
 def help_command(bot, update):
@@ -49,17 +52,63 @@ def help_command(bot, update):
                           "для последующей работы с ним\n"
                           "/add - Добавляет заказ, который вводит пользователь,"
                           "также оповещает остальных пользователей о новом заказе\n"
-                          "/remove - Удаляет заказ, по ID , "
-                          "который пользователь вводит следующим сообщением\n"
+                          "/remove - Удаляет заказ пользователя , "
+                          "также оповещает остальных пользователей, что заказ был удалён\n"
                           "/take - Использутеся для того, чтобы пользователь взял заказ по ID,"
                           "также оповещает остальных пользователей о взятом заказе \n"
-                          "/leave - Используется для выхода из группы пользователей этого бота\n"
                           "/help - Выводит справку о командах"
                      )
 
 
+def add(bot, message, user_id):
+    print("add")
+    print(user_id)
+    order = Order(user_id, message)
+    add_order(order)
+    set_state(user_id, "normal")
+    user_ids = get_users_ids(filter_id=user_id)
+    for rec_id in user_ids:
+        bot.send_message(chat_id=rec_id,
+                         text="Новый заказ был добавлен:\n" +
+                              str(user_id) + "\n" + message)
+
+
+def take(bot, message, user_id):
+    print("take")
+    print(user_id)
+    # noinspection PyBroadException
+    try:
+        take_order(performer_id=user_id, customer_id=message)
+        user_ids = get_users_ids(filter_id=user_id)
+        for rec_id in user_ids:
+            bot.send_message(chat_id=rec_id,
+                             text="Заказ:\n" +
+                                  message + "\n"
+                                            "взят")
+        bot.send_message(chat_id=message,
+                         text="Ваш заказ был взят пользователем:\n" + str(user_id)
+                         )
+
+    except Exception:
+        pass
+
+
+def normal(bot, user_id):
+    bot.send_message(chat_id=user_id, text="Используйте команду \n/help\n"
+                                           ",чтобы получить информацию"
+                                           " о возможных командах")
+
+
 def update_message(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="HI!")
+    msg = update.message.text
+    user_id = update.message.chat_id
+    state = get_state(user_id)
+    if state == "add":
+        add(bot=bot, message=msg, user_id=user_id)
+    elif state == "take":
+        take(bot=bot, message=msg, user_id=user_id)
+    elif state == "normal":
+        normal(bot=bot, user_id=user_id)
 
 
 def main():
