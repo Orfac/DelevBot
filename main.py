@@ -77,20 +77,22 @@ def take(bot, message, user_id):
     print("take")
     print(user_id)
     # noinspection PyBroadException
-    try:
-        take_order(performer_id=user_id, customer_id=message)
-        user_ids = get_users_ids(filter_id=user_id)
-        for rec_id in user_ids:
-            bot.send_message(chat_id=rec_id,
-                             text="Заказ:\n" +
-                                  message + "\n"
-                                            "взят")
-        bot.send_message(chat_id=message,
-                         text="Ваш заказ был взят пользователем:\n" + str(user_id)
-                         )
-
-    except Exception:
-        pass
+    if check_user(user_id):
+        if take_order(performer_id=user_id, customer_id=int(message)):
+            user_ids = get_users_ids(filter_id=user_id)
+            for rec_id in user_ids:
+                bot.send_message(chat_id=rec_id,
+                                 text="Заказ:\n" +
+                                      message + "\n"
+                                                "взят")
+            bot.send_message(chat_id=message,
+                             text="Ваш заказ был взят пользователем:\n" + str(user_id)
+                             )
+        else:
+            bot.send_message(chat_id=user_id,
+                             text="К сожалению, данный заказ не найден.\n"
+                                  "Используйте команду /take с другим id"
+                             )
 
 
 def normal(bot, user_id):
@@ -105,8 +107,10 @@ def update_message(bot, update):
     state = get_state(user_id)
     if state == "add":
         add(bot=bot, message=msg, user_id=user_id)
+        set_state(user_id,"normal")
     elif state == "take":
         take(bot=bot, message=msg, user_id=user_id)
+        set_state(user_id, "normal")
     elif state == "normal":
         normal(bot=bot, user_id=user_id)
 
@@ -124,9 +128,13 @@ def main():
     start_handler = CommandHandler('start', start_command)
     add_handler = CommandHandler('add', add_command)
     help_handler = CommandHandler('help', help_command)
+    remove_handler = CommandHandler('remove', remove_command)
+    take_handler = CommandHandler('take', take_command)
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(add_handler)
+    dispatcher.add_handler(remove_handler)
+    dispatcher.add_handler(take_handler)
     dispatcher.add_handler(help_handler)
     dispatcher.add_handler(msg_handler)
 

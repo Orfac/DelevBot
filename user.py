@@ -76,3 +76,11 @@ def drop_users():
     db = client['BotDB']
     users = db['Users']
     users.drop()
+
+
+def check_user(user_id):
+    list_ids = get_users_ids()
+    if user_id in list_ids:
+        return True
+    else:
+        return False

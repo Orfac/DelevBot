@@ -36,23 +36,29 @@ def delete_order(customer_id):
 
 
 def take_order(customer_id, performer_id):
-    orders = __get_orders()
-    orders.update_one(
-        {'customer_id': customer_id},
-        {
-            "$set": {'performer_id': performer_id}
-        }
-    )
+
+    if check_order(customer_id):
+        orders = __get_orders()
+        orders.update_one(
+            {'customer_id': customer_id},
+            {
+                "$set": {'performer_id': performer_id}
+            }
+        )
+        return True
+    else:
+        return False
 
 
-def get_order(customer_id):
+def check_order(customer_id):
     orders = __get_orders()
     order_d = orders.find_one(
         {'customer_id': customer_id}
     )
-    order_d.pop('_id', None)
-    order = Order(**order_d)
-    return order
+    if order_d is None:
+        return False
+    else:
+        return True
 
 
 def print_orders():
