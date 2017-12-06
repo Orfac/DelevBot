@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-#sfsdf
+
 
 class Order:
     def __init__(self, customer_id, description,
@@ -18,44 +18,52 @@ class Order:
         return order_dict
 
 
-class ListOrders:
-    def __init__(self):
-        pass
+def __get_orders():
+    client = MongoClient()
+    db = client['BotDB']
+    orders = db['Orders']
+    return orders
 
-    def __get_orders(self):
-        client = MongoClient()
-        db = client['BotDB']
-        orders = db['Orders']
-        return orders
 
-    def add_order(self, order):
-        orders = self.__get_orders()
-        orders.insert_one(order.to_dict())
+def add_order(order):
+    orders = __get_orders()
+    orders.insert_one(order.to_dict())
 
-    def delete_order(self, customer_id):
-        orders = self.__get_orders()
-        orders.remove({"customer_id": customer_id})
 
-    def take_order(self, customer_id, performer_id):
-        orders = self.__get_orders()
-        orders.update_one(
-            {'customer_id': customer_id},
-            {
-                "$set": {'performer_id': performer_id}
-            }
-        )
+def delete_order(customer_id):
+    orders = __get_orders()
+    orders.remove({"customer_id": customer_id})
 
-    def get_order(self, customer_id):
-        orders = self.__get_orders()
-        order_d = orders.find_one(
-            {'customer_id': customer_id}
-        )
-        order_d.pop('_id', None)
-        order = Order(**order_d)
-        return order
 
-    def print_orders(self):
-        orders = self.__get_orders()
-        orders_collection = orders.find()
-        for order in orders_collection:
-            print(order)
+def take_order(customer_id, performer_id):
+    orders = __get_orders()
+    orders.update_one(
+        {'customer_id': customer_id},
+        {
+            "$set": {'performer_id': performer_id}
+        }
+    )
+
+
+def get_order(customer_id):
+    orders = __get_orders()
+    order_d = orders.find_one(
+        {'customer_id': customer_id}
+    )
+    order_d.pop('_id', None)
+    order = Order(**order_d)
+    return order
+
+
+def print_orders():
+    orders = __get_orders()
+    orders_collection = orders.find()
+    for order in orders_collection:
+        print(order)
+
+
+def drop_orders():
+    client = MongoClient()
+    db = client['BotDB']
+    orders = db['Orders']
+    orders.drop()

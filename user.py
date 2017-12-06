@@ -18,7 +18,7 @@ def get_users():
         list_users.append(new_user)
     return list_users
 
-#dfsdf
+
 def add_new_user(new_id):
     users = __get_users()
     users.update_one(
@@ -31,7 +31,7 @@ def add_new_user(new_id):
 
 
 # this method is used only for debug
-def print_all_users():
+def print_users():
     users = __get_users()
     users_collection = users.find()
     for user in users_collection:
@@ -43,7 +43,7 @@ def set_state(user_id, state):
     users.update_one(
         {"id": user_id},
         {
-            "$set": {{"id": user_id, "state": state}}
+            "$set": {"id": user_id, "state": state}
         }
     )
 
@@ -59,3 +59,11 @@ def get_state(user_id):
 def remove_user(user_id):
     users = __get_users()
     users.remove({"id": user_id})
+
+
+def drop_users():
+
+    client = MongoClient()
+    db = client['BotDB']
+    users = db['Users']
+    users.drop()
